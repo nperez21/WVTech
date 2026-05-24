@@ -1,3 +1,4 @@
+using System.Text.Json;
 using MealPlanner.DAL.Abstract;
 using MealPlanner.Models;
 using MealPlanner.Models.DTO;
@@ -175,6 +176,10 @@ public class KrogerController : Controller
 
     private async Task<IActionResult> PerformExport(string userId, string storeId, string krogerToken, bool isRetry = false)
     {
+        var capturedItems = _shoppingListService.GetItemsForUser(userId)
+            .Select(i => new PantryModalItem(i.IngredientBase.Name, i.Amount, i.Measurement.Name))
+            .ToList();
+
         var result = await _exportService.RunExportAsync(userId, storeId, krogerToken);
 
         switch (result.Outcome)
@@ -198,6 +203,8 @@ public class KrogerController : Controller
                 TempData["KrogerSuccess"] = result.Skipped.Count == 0
                     ? $"{result.ItemsAdded} item(s) added to your Kroger cart!"
                     : $"{result.ItemsAdded} item(s) added to your Kroger cart. Could not find: {string.Join(", ", result.Skipped)}.";
+                HttpContext.Session.SetString("PantryModalItems", JsonSerializer.Serialize(capturedItems));
+                HttpContext.Session.SetString("ShowPantryModal", "true");
                 return RedirectToAction("Index", "Shopping");
 
             default: // ExportFailed

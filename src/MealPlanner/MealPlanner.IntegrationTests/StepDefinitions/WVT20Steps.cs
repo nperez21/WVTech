@@ -568,24 +568,28 @@ public class WVT20Steps
     }
 
     [Given("'{string}' has a meal with ingredient '{string}' scheduled on today")]
+    [Given("{string} has a meal with ingredient {string} scheduled on today")]
     public void GivenUserHasMealWithIngredientScheduledToday(string username, string ingredientName)
     {
         CreateMealWithIngredientOnDate(ingredientName, DateTime.Today.AddHours(12));
     }
 
     [Given("'{string}' has a meal with ingredient '{string}' scheduled {int} days from now")]
+    [Given("{string} has a meal with ingredient {string} scheduled {int} days from now")]
     public void GivenUserHasMealWithIngredientScheduledDaysFromNow(string username, string ingredientName, int days)
     {
         CreateMealWithIngredientOnDate(ingredientName, DateTime.Today.AddDays(days).AddHours(12));
     }
 
     [When("'{string}' views the shopping list for today's date")]
+    [When("{string} views the shopping list for today's date")]
     public void WhenUserViewsShoppingListForToday(string username)
     {
         NavigateToShoppingListForDate(DateTime.Today);
     }
 
     [When("'{string}' views the shopping list for {int} days from now")]
+    [When("{string} views the shopping list for {int} days from now")]
     public void WhenUserViewsShoppingListForDaysFromNow(string username, int days)
     {
         NavigateToShoppingListForDate(DateTime.Today.AddDays(days));

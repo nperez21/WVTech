@@ -1,5 +1,8 @@
+using System.Globalization;
+using System.Text.Json;
 using MealPlanner.DAL.Abstract;
 using MealPlanner.Models;
+using MealPlanner.Models.DTO;
 using MealPlanner.Services;
 using MealPlanner.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -66,6 +69,10 @@ public class ShoppingController : Controller
         var items = _shoppingListService.GetItemsForUser(user.Id);
         var profile = await _userSettingsRepo.GetByUserIdAsync(user.Id);
         var measurements = await _measurementRepo.GetAllOrderedAsync();
+
+        bool showPantryModal = HttpContext.Session.GetString("ShowPantryModal") == "true";
+        if (showPantryModal) HttpContext.Session.Remove("ShowPantryModal");
+        ViewBag.ShowPantryModal = showPantryModal;
 
         return View(new ShoppingListViewModel
         {
@@ -334,6 +341,69 @@ public class ShoppingController : Controller
 
         TempData["SuccessMessage"] = $"{model.Name} was added to your pantry.";
         return RedirectToAction(nameof(Pantry));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddToPantry()
+    {
+        var json = HttpContext.Session.GetString("PantryModalItems");
+        HttpContext.Session.Remove("PantryModalItems");
+
+        if (string.IsNullOrEmpty(json))
+        {
+            TempData["ShoppingListError"] = "No items available to add to pantry.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var user = await _registrationService.FindUserByClaimAsync(User);
+        if (user == null) return Challenge();
+
+        var items = JsonSerializer.Deserialize<List<PantryModalItem>>(json);
+        if (items != null)
+        {
+            foreach (var item in items)
+            {
+                var ingredient = _pantryService.BuildPantryItem(item.Name, item.Amount, item.Measurement);
+                _pantryService.AddPantryItem(user.Id, ingredient);
+                _context.SaveChanges();
+            }
+        }
+
+        TempData["SuccessMessage"] = "Items added to your pantry!";
+        return RedirectToAction(nameof(Pantry));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SkipAddToPantry()
+    {
+        HttpContext.Session.Remove("PantryModalItems");
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public IActionResult TestSetupPantryModal(string names, string amounts, string measurements)
+    {
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        if (env != "Development" && env != "Staging")
+            return NotFound();
+
+        var nameList = names.Split(',');
+        var amountList = amounts.Split(',');
+        var measList = measurements.Split(',');
+
+        var items = nameList
+            .Zip(amountList, (n, a) => (Name: n.Trim(), Amount: a.Trim()))
+            .Zip(measList, (na, m) => new PantryModalItem(
+                na.Name,
+                float.Parse(na.Amount, CultureInfo.InvariantCulture),
+                m.Trim()))
+            .ToList();
+
+        HttpContext.Session.SetString("PantryModalItems", JsonSerializer.Serialize(items));
+        HttpContext.Session.SetString("ShowPantryModal", "true");
+        return Ok();
     }
 
 }

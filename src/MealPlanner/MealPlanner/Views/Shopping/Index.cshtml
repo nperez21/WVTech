@@ -137,6 +137,34 @@
 
 </div>
 
+<!-- Add to Pantry Modal -->
+@{
+    bool showPantryModal = ViewBag.ShowPantryModal is true;
+}
+@if (showPantryModal)
+{
+    <div id="addToPantryModal" class="sl-modal-overlay" style="display:flex">
+        <div class="sl-modal-panel">
+            <div class="sl-modal-header">
+                <h5 class="sl-modal-title">Add Items to Pantry?</h5>
+            </div>
+            <div class="sl-modal-body">
+                <p>Your shopping list was sent to your Kroger cart. Would you like to add these items to your pantry as well?</p>
+            </div>
+            <div class="sl-modal-footer d-flex gap-2 mt-2">
+                <form asp-action="AddToPantry" asp-controller="Shopping" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" id="confirmAddToPantry" class="sl-export-btn">Yes, add to pantry</button>
+                </form>
+                <form asp-action="SkipAddToPantry" asp-controller="Shopping" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" id="cancelAddToPantry" class="sl-ghost-btn">No, skip</button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
 <!-- Export History Modal -->
 <div id="exportHistoryModal" class="sl-modal-overlay">
     <div class="sl-modal-panel">
