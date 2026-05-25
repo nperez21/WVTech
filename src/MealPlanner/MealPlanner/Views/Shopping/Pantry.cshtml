@@ -52,7 +52,7 @@
                 <option value="Count">Count</option>
                 <option value="Cup(s)">Cup(s)</option>
                 <option value="Ounce(s)">Ounce(s)</option>
-                <option value="Pound(s)">Pounds</option>
+                <option value="Pound">Pounds</option>
                 <option value="L">L</option>
                 <option value="KG">KG</option>
             </select>
@@ -68,36 +68,47 @@
         {
             @foreach (var item in Model)
             {
+                var amountStr = item.Amount % 1 == 0
+                    ? ((int)item.Amount).ToString()
+                    : item.Amount.ToString("G", System.Globalization.CultureInfo.InvariantCulture);
                 <div class="pantry-item-row pantry-item">
                     <span class="pantry-item-name">@item.IngredientBase.Display()</span>
-                    <div class="pantry-item-right">
+                    <div class="pantry-item-controls">
                         <form asp-action="UpdatePantryItemAmount" method="post" class="pantry-qty-form">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ingredientId" value="@item.Id" />
-                            <input type="number"
-                                   name="newAmount"
-                                   value="@item.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                   min="0.01"
-                                   step="any"
-                                   class="pantry-qty-pill-input pantry-qty-input"
-                                   data-original="@item.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                   oninput="togglePantryQtySave(this)" />
-                            <span class="pantry-qty-unit">@item.Measurement?.Name</span>
-                            <button type="submit" class="pantry-qty-save-btn pantry-qty-save" style="display:none">Save</button>
-                        </form>
-                        <form asp-action="RemovePantryItem" method="post" class="pantry-remove-form">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="ingredientId" value="@item.Id" />
-                            <button type="submit" class="pantry-remove-btn remove-pantry-item" title="Remove item">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
-                                     fill="none" stroke="currentColor" stroke-width="2.5"
-                                     stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"/>
-                                    <line x1="6" y1="6" x2="18" y2="18"/>
-                                </svg>
-                            </button>
+                            <div class="qty-controls sl-qty-controls">
+                                <button type="button"
+                                        class="qty-decrement sl-qty-step-btn pantry-step-btn"
+                                        data-ingredient-id="@item.Id"
+                                        data-delta="-1">−</button>
+                                <input type="number" name="newAmount"
+                                       class="pantry-qty-input pantry-pill-input"
+                                       value="@amountStr"
+                                       data-original="@amountStr"
+                                       step="any"
+                                       oninput="togglePantryQtySave(this)" />
+                                <span class="pantry-qty-unit">@item.Measurement?.Name</span>
+                                <button type="button"
+                                        class="qty-increment sl-qty-step-btn pantry-step-btn"
+                                        data-ingredient-id="@item.Id"
+                                        data-delta="1">+</button>
+                            </div>
+                            <button type="submit" class="pantry-qty-save" style="display:none">Save</button>
                         </form>
                     </div>
+                    <form asp-action="RemovePantryItem" method="post" class="pantry-delete-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ingredientId" value="@item.Id" />
+                        <button type="submit" class="sl-remove-btn remove-pantry-item" title="Remove item">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             }
         }
@@ -122,14 +133,40 @@
 </div>
 
 <script>
-    function togglePantryQtySave(input) {
-        const btn = input.closest('form').querySelector('.pantry-qty-save');
-        btn.style.display = parseFloat(input.value) !== parseFloat(input.dataset.original) ? 'inline-block' : 'none';
-    }
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('cartDropdown')?.classList.remove('open');
     });
     window.addEventListener('pageshow', function () {
         document.getElementById('cartDropdown')?.classList.remove('open');
+    });
+
+    function togglePantryQtySave(input) {
+        const btn = input.closest('form').querySelector('.pantry-qty-save');
+        const changed = parseFloat(input.value) !== parseFloat(input.dataset.original);
+        btn.style.display = changed ? 'inline-block' : 'none';
+    }
+
+    document.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.pantry-step-btn');
+        if (!btn) return;
+
+        const ingredientId = parseInt(btn.dataset.ingredientId);
+        const delta = parseInt(btn.dataset.delta);
+        const form = btn.closest('.pantry-qty-form');
+        const input = form.querySelector('.pantry-qty-input');
+        const currentAmount = parseFloat(input.value);
+        const newAmount = Math.max(0.01, currentAmount + delta);
+        const amountStr = newAmount % 1 === 0 ? newAmount.toFixed(0) : newAmount.toString();
+
+        const resp = await fetch('/Shopping/UpdatePantryItemAmountJson', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ingredientId, newAmount })
+        });
+
+        if (!resp.ok) return;
+
+        input.value = amountStr;
+        input.dataset.original = amountStr;
     });
 </script>
