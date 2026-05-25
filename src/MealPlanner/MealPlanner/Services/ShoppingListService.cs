@@ -6,16 +6,18 @@ namespace MealPlanner.Services;
 public class ShoppingListService : IShoppingListService
 {
     private readonly IShoppingListRepository _shoppingListRepository;
-    private readonly IMealRepository _mealRepository;  
+    private readonly IMealRepository _mealRepository;
     private readonly IIngredientBaseRepository _ingredientBaseRepo;
     private readonly IRepository<Measurement> _measurementRepo;
+    private readonly IUserRepository? _userRepo;
 
-    public ShoppingListService(IShoppingListRepository shoppingListRepository, IMealRepository mealRepository, IIngredientBaseRepository ingredientBaseRepo, IRepository<Measurement> measurementRepo)
+    public ShoppingListService(IShoppingListRepository shoppingListRepository, IMealRepository mealRepository, IIngredientBaseRepository ingredientBaseRepo, IRepository<Measurement> measurementRepo, IUserRepository? userRepo = null)
     {
         _shoppingListRepository = shoppingListRepository;
         _mealRepository = mealRepository;
         _ingredientBaseRepo = ingredientBaseRepo;
-        _measurementRepo = measurementRepo;   
+        _measurementRepo = measurementRepo;
+        _userRepo = userRepo;
     }
 
     public async Task SyncFromDateRangeAsync(string userId, User user, DateTime dateFrom, DateTime dateTo)
@@ -33,6 +35,12 @@ public class ShoppingListService : IShoppingListService
 
         var manualItems = _shoppingListRepository.GetByUserId(userId).ToList();
         var dismissed = _shoppingListRepository.GetDismissedIngredientBaseIds(userId);
+
+        var pantryAmounts = _userRepo != null
+            ? _userRepo.GetByUserId(userId)
+                .GroupBy(p => (p.IngredientBase.Id, p.Measurement.Id))
+                .ToDictionary(g => g.Key, g => g.Sum(p => p.Amount))
+            : new Dictionary<(int, int), float>();
 
         var grouped = ingredients
             .GroupBy(i => (IngredientNameNormalizer.NormalizeKey(i.IngredientBase.Name), i.Measurement.Id))
@@ -57,8 +65,17 @@ public class ShoppingListService : IShoppingListService
                     normalizedName,
                     StringComparison.OrdinalIgnoreCase) &&
                 m.MeasurementId == item.Measurement.Id);
-            if (!alreadyCovered)
-                _shoppingListRepository.Add(item);
+            if (alreadyCovered)
+                continue;
+
+            if (pantryAmounts.TryGetValue((item.IngredientBase.Id, item.Measurement.Id), out var inPantry))
+            {
+                item.Amount -= inPantry;
+                if (item.Amount <= 0)
+                    continue;
+            }
+
+            _shoppingListRepository.Add(item);
         }
     }
 
