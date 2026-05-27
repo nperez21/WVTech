@@ -46,23 +46,17 @@
         <form asp-action="AddPantryItem" method="post" class="pantry-add-form">
             @Html.AntiForgeryToken()
             <input id="Amount" name="Amount" type="number" step="any" min="0"
-                   class="pantry-input pantry-qty-field" placeholder="0" />
+                   class="pantry-input pantry-qty-field" placeholder="Qty" />
             <select id="Measurement" name="Measurement" class="pantry-input pantry-unit-select">
+                <option value="" disabled selected>Unit</option>
                 @foreach (var m in (List<MealPlanner.Models.Measurement>)ViewBag.Measurements)
                 {
-                    if (m.Name == "Unit")
-                    {
-                        <option value="@m.Name" selected>@m.Abbreviation</option>
-                    }
-                    else
-                    {
-                        <option value="@m.Name">@m.Abbreviation</option>
-                    }
+                    <option value="@m.Name">@m.Abbreviation</option>
                 }
             </select>
             <input id="Name" name="Name" type="text"
                    class="pantry-input pantry-name-field" placeholder="Ingredient name" />
-            <button id="addPantryItemBtn" type="submit" class="pantry-add-btn">Add to Pantry</button>
+            <button id="addPantryItemBtn" type="submit" class="pantry-add-btn">Add item</button>
         </form>
     </div>
 
