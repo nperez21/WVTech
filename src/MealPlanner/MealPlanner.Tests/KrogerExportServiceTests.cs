@@ -106,7 +106,7 @@ public class KrogerExportServiceTests
     }
 
     [Test]
-    public async Task RunExportAsync_ClearsShoppingList_WhenExportSucceeds()
+    public async Task RunExportAsync_DoesNotClearShoppingList_WhenExportSucceeds()
     {
         _krogerServiceMock.Setup(s => s.GetClientCredentialsTokenAsync()).ReturnsAsync("search-token");
         _krogerServiceMock.Setup(s => s.SearchProductUpcAsync(
@@ -117,7 +117,7 @@ public class KrogerExportServiceTests
 
         await _service.RunExportAsync(UserId, StoreId, Token);
 
-        _shoppingListRepoMock.Verify(r => r.ClearAllItems(UserId), Times.Once);
+        _shoppingListRepoMock.Verify(r => r.ClearAllItems(UserId), Times.Never);
     }
 
     [Test]

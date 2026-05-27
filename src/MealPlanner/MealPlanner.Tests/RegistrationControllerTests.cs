@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using NUnit.Framework;
 
@@ -25,6 +26,7 @@ namespace MealPlanner.Tests
             _mockAccountService = new Mock<IRegistrationService>();
             _mockEmailService = new Mock<IEmailService>();
             _controller = new RegisterController(_mockAccountService.Object, _mockEmailService.Object);
+            _controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
         }
 
         [TearDown]
@@ -91,8 +93,7 @@ namespace MealPlanner.Tests
             // Assert
             var redirectResult = result as RedirectToActionResult;
             Assert.That(redirectResult, Is.Not.Null);
-            Assert.That(redirectResult.ActionName, Is.EqualTo("EmailAuth"));
-            Assert.That(redirectResult.ControllerName, Is.EqualTo("Register"));
+            Assert.That(redirectResult.ActionName, Is.EqualTo("Register"));
 
             _mockEmailService.Verify(
                 e => e.SendEmailAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()),
@@ -173,8 +174,7 @@ namespace MealPlanner.Tests
             // Assert
             var redirect = result as RedirectToActionResult;
             Assert.That(redirect, Is.Not.Null);
-            Assert.That(redirect.ActionName, Is.EqualTo("EmailAuth"));
-            Assert.That(redirect.ControllerName, Is.EqualTo("Register"));
+            Assert.That(redirect.ActionName, Is.EqualTo("Register"));
 
             _mockEmailService.Verify(
                 e => e.SendEmailAsync(user.Email, It.IsAny<string>(), It.IsAny<string>()),

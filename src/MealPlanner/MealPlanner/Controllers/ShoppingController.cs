@@ -284,7 +284,6 @@ public class ShoppingController : Controller
         if (user == null) return Challenge();
 
         var items = _pantryService.GetPantryItems(user.Id);
-        ViewBag.Measurements = await _measurementRepo.GetAllOrderedAsync();
         return View(items);
     }
 
