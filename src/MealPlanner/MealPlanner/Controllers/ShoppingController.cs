@@ -308,6 +308,24 @@ public class ShoppingController : Controller
     }
 
     [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> UpdatePantryItemAmountJson([FromBody] UpdatePantryAmountRequest request)
+    {
+        if (request.NewAmount <= 0) return BadRequest("Amount must be greater than zero.");
+
+        var user = await _registrationService.FindUserByClaimAsync(User);
+        if (user == null) return Unauthorized();
+
+        _pantryService.UpdatePantryItemAmount(request.IngredientId, user.Id, request.NewAmount);
+        _context.SaveChanges();
+        Response.Cookies.Delete("ShoppingListSynced");
+
+        return Ok();
+    }
+
+    public record UpdatePantryAmountRequest(int IngredientId, float NewAmount);
+
+    [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RemovePantryItem(int ingredientId)
     {

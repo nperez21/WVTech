@@ -151,14 +151,14 @@
             <div class="sl-modal-body">
                 <p>Your shopping list was sent to your Kroger cart. Would you like to add these items to your pantry as well?</p>
             </div>
-            <div class="sl-modal-footer d-flex gap-2 mt-2">
+            <div class="sl-modal-footer">
                 <form asp-action="AddToPantry" asp-controller="Shopping" method="post">
                     @Html.AntiForgeryToken()
-                    <button type="submit" id="confirmAddToPantry" class="sl-export-btn">Yes, add to pantry</button>
+                    <button type="submit" id="confirmAddToPantry" class="sl-export-btn">Yes</button>
                 </form>
                 <form asp-action="SkipAddToPantry" asp-controller="Shopping" method="post">
                     @Html.AntiForgeryToken()
-                    <button type="submit" id="cancelAddToPantry" class="sl-ghost-btn">No, skip</button>
+                    <button type="submit" id="cancelAddToPantry" class="sl-pantry-skip-link">Skip</button>
                 </form>
             </div>
         </div>
