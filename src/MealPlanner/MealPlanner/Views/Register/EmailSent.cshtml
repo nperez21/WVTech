@@ -1,25 +1,23 @@
-@using MealPlanner.ViewModels;
-
 @{
-    ViewData["Title"] = "Email Auth";
+    ViewData["Title"] = "Email Sent";
     Layout = "~/Views/Shared/_AccountLayout.cshtml";
 }
 
+<div class="auth-page">
+    <div class="auth-card">
 
-<div class="account-container">
-    <div class="account-box">
-        <h2 class="text-center mb-4">Email Sent</h2>
-        <p class="text-center">A link has been sent to your email to authorize you as a user. Please
-            check your inbox and follow the instructions to continue to your account.</p>
-            <div class="text-center mt-4">
-                <a asp-controller="Login" asp-action="Login" class="text-decoration-none mt-2">Back to Login</a>
-            </div>
+        <!-- Logo -->
+        <div class="auth-logo">
+            <i class="ti ti-bowl-spoon"></i>
+            <span>OneBite</span>
         </div>
-    </div>
 
-    @section Scripts {
-        @{
-            <!-- Include client-side validation scripts partial for unobtrusive validation -->
-            await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
-        }
-    }
+        <!-- Heading -->
+        <h1 class="auth-heading">Email Sent</h1>
+        <p class="auth-sub">A confirmation link has been sent to your email. Please check your inbox and follow the instructions to activate your account.</p>
+
+        <!-- Back to Login button -->
+        <a asp-controller="Login" asp-action="Login" class="auth-submit" style="display:block; text-align:center; text-decoration:none;">Back to Login</a>
+
+    </div>
+</div>

@@ -93,6 +93,21 @@
     </div>
 </div>
 
+@if (ViewBag.ShowEmailModal == true)
+{
+    <div class="auth-modal-overlay">
+        <div class="auth-modal-card">
+            <div class="auth-logo">
+                <i class="ti ti-bowl-spoon"></i>
+                <span>OneBite</span>
+            </div>
+            <h1 class="auth-heading">Check your email</h1>
+            <p class="auth-sub">A confirmation link has been sent to your email. Please check your inbox and follow the instructions to activate your account.</p>
+            <a asp-controller="Login" asp-action="Login" class="auth-submit" style="display:block; text-align:center; text-decoration:none;">Back to Login</a>
+        </div>
+    </div>
+}
+
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml"); }
     <script>

@@ -16,7 +16,11 @@ public class RegisterController : Controller
     }
 
     [HttpGet("Register")]
-    public IActionResult Register() => View();
+    public IActionResult Register()
+    {
+        ViewBag.ShowEmailModal = TempData["ShowEmailModal"] as bool? ?? false;
+        return View();
+    }
 
     [HttpPost("Register")]
     [ValidateAntiForgeryToken]
@@ -49,7 +53,8 @@ public class RegisterController : Controller
 
         await _emailService.SendEmailAsync(user.Email, subject, message);
 
-        return RedirectToAction("EmailAuth", "Register");
+        TempData["ShowEmailModal"] = true;
+        return RedirectToAction("Register");
     }
 
     //confirm user email when they click the link in their email

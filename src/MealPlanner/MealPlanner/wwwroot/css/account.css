@@ -277,3 +277,25 @@
 .login-page .auth-back-link:hover {
     color: #666;
 }
+
+/* ── Email-sent modal overlay ────────────────────────────── */
+.login-page .auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.5rem;
+}
+
+.login-page .auth-modal-card {
+    background: #ffffff;
+    border: 0.5px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}

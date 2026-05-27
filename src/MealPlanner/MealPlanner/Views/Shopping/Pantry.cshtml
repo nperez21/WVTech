@@ -48,13 +48,17 @@
             <input id="Amount" name="Amount" type="number" step="any" min="0"
                    class="pantry-input pantry-qty-field" placeholder="0" />
             <select id="Measurement" name="Measurement" class="pantry-input pantry-unit-select">
-                <option value="Unit">Unit</option>
-                <option value="Count">Count</option>
-                <option value="Cup(s)">Cup(s)</option>
-                <option value="Ounce(s)">Ounce(s)</option>
-                <option value="Pound">Pounds</option>
-                <option value="L">L</option>
-                <option value="KG">KG</option>
+                @foreach (var m in (List<MealPlanner.Models.Measurement>)ViewBag.Measurements)
+                {
+                    if (m.Name == "Unit")
+                    {
+                        <option value="@m.Name" selected>@m.Abbreviation</option>
+                    }
+                    else
+                    {
+                        <option value="@m.Name">@m.Abbreviation</option>
+                    }
+                }
             </select>
             <input id="Name" name="Name" type="text"
                    class="pantry-input pantry-name-field" placeholder="Ingredient name" />

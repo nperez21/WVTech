@@ -59,8 +59,6 @@ public class KrogerExportService : IKrogerExportService
             }).ToList()
         });
 
-        _shoppingListService.ClearItems(userId);
-
         return new KrogerExportResult
         {
             Outcome = KrogerExportOutcome.Success,
